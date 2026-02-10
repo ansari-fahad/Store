@@ -1,0 +1,77 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Color Palette - Premium & Modern */
+  --primary-color: #6366f1; /* Indigo */
+  --primary-hover: #4f46e5;
+  --secondary-color: #ec4899; /* Pink */
+  --accent-color: #8b5cf6; /* Violet */
+  
+  --bg-gradient: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+  --glass-bg: rgba(255, 255, 255, 0.05); /* Very subtle white tint */
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --input-bg: rgba(255, 255, 255, 0.07);
+  --input-border: rgba(255, 255, 255, 0.2);
+  
+  --font-family: 'Outfit', system-ui, sans-serif;
+  --radius-md: 16px;
+  --radius-sm: 8px;
+  
+  /* Animations */
+  
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background: var(--bg-gradient);
+  min-height: 100vh;
+  display: flex; /* Center the app */
+  justify-content: center;
+  align-items: center;
+  color: var(--text-main);
+  overflow: hidden; /* Prevent scroll on full screen login */
+}
+
+/* Background Animation */
+@keyframes drift {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(20px, 20px) rotate(2deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.background-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
+  top: -150px;
+  left: -150px;
+  z-index: -1;
+  animation: drift 10s infinite ease-in-out;
+  pointer-events: none;
+}
+
+.background-glow-2 {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 70%);
+  bottom: -100px;
+  right: -100px;
+  z-index: -1;
+  animation: drift 15s infinite reverse ease-in-out;
+  pointer-events: none;
+}
