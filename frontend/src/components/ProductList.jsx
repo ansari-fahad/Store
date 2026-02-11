@@ -90,7 +90,7 @@ const ProductList = () => {
             </aside> */}
 
             <main className="main-content">
-                <header className="top-bar">
+                {/* <header className="top-bar">
                     <button className="menu-btn" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
                         ☰
                     </button>
@@ -101,7 +101,7 @@ const ProductList = () => {
                     <div className="user-profile">
                         <div className="avatar">{userData.username ? userData.username[0].toUpperCase() : 'G'}</div>
                     </div>
-                </header>
+                </header> */}
 
                 <div className="pos-container">
                     <h2 className="title">Sales Entry</h2>
@@ -196,30 +196,33 @@ const ProductList = () => {
                 ) : error ? (
                     <div className="error-message">Error: {error}</div>
                 ) : (
-                    <div className="table-container">
-                        <table className="product-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Product Name</th>
-                                    <th>Price</th>
-                                    {/* <th className="text-right">Actions</th> */}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {products.map((product) => (
-                                    <tr key={product._id}>
-                                        <td className="product-id">#{product.ItemKey}</td>
-                                        <td className="product-name">**{product.ItemName}**</td>
-                                        <td className="product-price">₹{product.ItemRate}</td>
-                                        {/* <td className="product-actions text-right">
+                    <div className="pos-container small">
+                        <h2 className="title">Smple Data Windows</h2>
+                        <div className="table-container">
+                            <table className="product-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Product Name</th>
+                                        <th>Stock</th>
+                                        {/* <th className="text-right">Actions</th> */}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {products.map((product) => (
+                                        <tr key={product._id}>
+                                            <td className="product-id">#{product.ItemKey}</td>
+                                            <td className="product-name">**{product.ItemName}**</td>
+                                            <td className="product-price">₹{product.ItemRate}</td>
+                                            {/* <td className="product-actions text-right">
             <button className="action-btn edit-btn">Edit</button>
             <button className="action-btn delete-btn">Delete</button>
           </td> */}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
             </main>
