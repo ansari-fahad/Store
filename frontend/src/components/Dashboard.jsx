@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 
 const Dashboard = () => {
     const navigate = useNavigate();
+    const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
     const userData = JSON.parse(localStorage.getItem('user')) || { username: 'Guest' };
 
     const handleLogout = () => {
@@ -14,7 +15,8 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-container">
-            <aside className="sidebar">
+            <div className={`sidebar-overlay ${isSidebarOpen ? 'active' : ''}`} onClick={() => setIsSidebarOpen(false)}></div>
+            <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
                 <div className="sidebar-header">
                     <h2>Store<span>Admin</span></h2>
                 </div>
@@ -33,6 +35,9 @@ const Dashboard = () => {
 
             <main className="main-content">
                 <header className="top-bar">
+                    <button className="menu-btn" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+                        ☰
+                    </button>
                     <div className="welcome-text">
                         <h1>Welcome back, {userData.username}!</h1>
                         <p>Here's what's happening with your store today.</p>

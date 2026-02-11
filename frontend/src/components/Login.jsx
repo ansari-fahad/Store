@@ -25,12 +25,12 @@ const Login = () => {
         "https://storebackendapp.vercel.app/api/users/login",
         // "http://localhost:3000/api/users/login", 
         {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
 
       const data = await response.json();
 
@@ -38,7 +38,7 @@ const Login = () => {
         // alert('Login successful: ' + data.message);
         console.log('User data:', data.user);
         localStorage.setItem('user', JSON.stringify(data.user));
-        navigate('/dashboard');
+        navigate('/products');
       } else {
         alert('Login failed: ' + (data.message || 'Unknown error'));
       }
@@ -86,21 +86,21 @@ const Login = () => {
               className="form-input"
             />
           </div>
-
+          {/* 
           <div className="form-actions">
             <div className="remember-me">
               <input type="checkbox" id="remember" />
               <label htmlFor="remember">Remember me</label>
             </div>
             <a href="#" className="forgot-password">Forgot password?</a>
-          </div>
+          </div> */}
 
           <button type="submit" className={`submit-btn ${loading ? 'loading' : ''}`} disabled={loading}>
             {loading ? 'Please wait...' : 'Sign In'}
           </button>
         </form>
 
-        <div className="social-login">
+        {/* <div className="social-login">
           <p>Or continue with</p>
           <div className="social-icons">
             <button className="social-btn google">G</button>
@@ -111,7 +111,7 @@ const Login = () => {
 
         <div className="footer-text">
           Don't have an account? <a href="#">Sign up</a>
-        </div>
+        </div> */}
       </div>
     </div>
   );

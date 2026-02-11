@@ -220,3 +220,117 @@
     color: rgba(255, 255, 255, 0.4);
     font-size: 0.85rem;
 }
+
+/* Mobile Menu Button - Hidden on Desktop */
+.menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-right: 15px;
+    padding: 5px;
+    z-index: 20;
+    /* Ensure button is clickable */
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 15;
+    /* Below sidebar, above content */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column;
+        /* Stack for mobile if needed, but sidebar is fixed */
+        overflow-x: hidden;
+    }
+
+    /* Sidebar Mobile Styles */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 250px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
+        background: rgba(20, 20, 30, 0.95);
+        /* solid background for readability */
+        z-index: 20;
+        /* Above everything */
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .menu-btn {
+        display: block;
+    }
+
+    /* Main Content Adjustments */
+    .main-content {
+        padding: 20px 15px;
+        width: 100%;
+        margin-left: 0;
+        /* Override any potential margin if we had one */
+    }
+
+    .top-bar {
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .welcome-text h1 {
+        font-size: 1.5rem;
+    }
+
+    /* Stats Grid Adjustments */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        /* Stack cards on mobile */
+        gap: 15px;
+    }
+
+    /* Activity List Adjustments */
+    .activity-item {
+        align-items: flex-start;
+    }
+
+    .recent-activity {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-card .value {
+        font-size: 1.5rem;
+    }
+
+    .user-profile .avatar {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+}
