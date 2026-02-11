@@ -1,6 +1,7 @@
 import React from 'react';
 import './Dashboard.css';
-import { useNavigate } from 'react-router-dom';
+
+import { useNavigate, Link } from 'react-router-dom';
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -18,12 +19,12 @@ const Dashboard = () => {
                     <h2>Store<span>Admin</span></h2>
                 </div>
                 <nav className="sidebar-nav">
-                    <a href="#" className="active">Dashboard</a>
-                    <a href="#">Products</a>
-                    <a href="#">Orders</a>
-                    <a href="#">Customers</a>
-                    <a href="#">Analytics</a>
-                    <a href="#">Settings</a>
+                    <Link to="/dashboard" className="active">Dashboard</Link>
+                    <Link to="/products">Products</Link>
+                    <Link to="#">Orders</Link>
+                    <Link to="#">Customers</Link>
+                    <Link to="#">Analytics</Link>
+                    <Link to="#">Settings</Link>
                 </nav>
                 <div className="sidebar-footer">
                     <button onClick={handleLogout} className="logout-btn">Logout</button>
