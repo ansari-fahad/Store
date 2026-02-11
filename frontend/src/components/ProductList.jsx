@@ -197,7 +197,7 @@ const ProductList = () => {
                     <div className="error-message">Error: {error}</div>
                 ) : (
                     <div className="pos-container small">
-                        <h2 className="title">Smple Data Windows</h2>
+                        <h1 className="title">Smple Data From Windows</h1>
                         <div className="table-container">
                             <table className="product-table">
                                 <thead>
