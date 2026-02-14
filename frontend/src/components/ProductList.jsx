@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import './Dashboard.css'; // Reuse dashboard layout styles
 import './ProductList.css'; // Custom styles for product list
 import './POS.css'; // Styles for POS section
+import AutoSuggest from './AutoSuggest';
 
 const ProductList = () => {
     const navigate = useNavigate();
@@ -43,6 +44,23 @@ const ProductList = () => {
     const handleLogout = () => {
         localStorage.removeItem('user');
         navigate('/');
+    };
+
+    const fetchSuggestions = async (query) => {
+        if (!query) return [];
+        const lowerQuery = query.toLowerCase();
+        return products
+            .filter(item => item.ItemName.toLowerCase().includes(lowerQuery))
+            .map(item => ({
+                name: item.ItemName,
+                ...item
+            }));
+    };
+
+    const handleProductSelect = (suggestion) => {
+        setProduct(suggestion.name);
+        setRate(suggestion.ItemRate);
+        // Focus quantity input if needed, or leave it to user
     };
 
     useEffect(() => {
@@ -103,93 +121,7 @@ const ProductList = () => {
                     </div>
                 </header> */}
 
-                <div className="pos-container">
-                    <h2 className="title">Sales Entry</h2>
 
-                    {/* Customer Section */}
-                    <div className="section customer-section">
-                        <input className="pos-input" placeholder="Customer Name" />
-                        <input className="pos-input" placeholder="Phone Number" />
-                    </div>
-
-                    {/* Product Entry */}
-                    <div className="section product-entry-section">
-                        <input
-                            className="pos-input product-name-input"
-                            placeholder="Product"
-                            value={product}
-                            onChange={(e) => setProduct(e.target.value)}
-                        />
-                        <input
-                            className="pos-input"
-                            type="number"
-                            placeholder="Rate"
-                            value={rate}
-                            onChange={(e) => setRate(e.target.value)}
-                        />
-                        <input
-                            className="pos-input"
-                            type="number"
-                            placeholder="Qty"
-                            value={qty}
-                            onChange={(e) => setQty(e.target.value)}
-                        />
-                        <input
-                            className="pos-input"
-                            type="number"
-                            placeholder="Total"
-                            value={rate && qty ? rate * qty : ""}
-                            readOnly
-                        />
-                        <button className="btn add" onClick={handleAdd}>Add</button>
-                        <button className="btn reset" onClick={handleReset}>Reset</button>
-                    </div>
-
-                    {/* Product Grid */}
-                    <table className="grid">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Product</th>
-                                <th>Rate</th>
-                                <th>Qty</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {cart.map((p, index) => (
-                                <tr key={index}>
-                                    <td>{index + 1}</td>
-                                    <td>{p.product}</td>
-                                    <td>{p.rate}</td>
-                                    <td>{p.qty}</td>
-                                    <td>{p.total}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-
-                    {/* Total Section */}
-                    <div className="summary">
-                        <div>
-                            <label>Extra Discount:</label>
-                            <input
-                                className="pos-input"
-                                type="number"
-                                value={extraDiscount}
-                                onChange={(e) => setExtraDiscount(parseFloat(e.target.value) || 0)}
-                            />
-                        </div>
-                        <h2>Total: ₹ {finalTotal.toFixed(2)}</h2>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="actions">
-                        <button className="btn save">Save</button>
-                        <button className="btn reset" onClick={handleReset}>Reset</button>
-                        {/* <button className="btn print">Print</button> */}
-                    </div>
-                </div>
 
                 {loading ? (
                     <div className="loading-container">Loading products...</div>
