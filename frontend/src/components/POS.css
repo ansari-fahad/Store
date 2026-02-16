@@ -202,3 +202,59 @@
         grid-template-columns: 1fr 1fr 1fr;
     }
 }
+
+/* Product List Table Styles */
+.product-list-scroll {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.product-list-scroll .grid {
+    margin-bottom: 0;
+    /* Remove bottom margin to unwanted spacing */
+}
+
+/* Sticky Header for Product List */
+.product-list-scroll th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #2a2d3e;
+    /* Solid background for header to cover scrolling content */
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow line */
+}
+
+/* Custom Scrollbar for Webkit */
+.product-list-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.product-list-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.product-list-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.product-list-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.grid tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: background-color 0.2s;
+}
+
+.highlight-border {
+    border: 2px solid #8b5cf6;
+    /* Use accent color */
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+    /* Glow effect */
+}

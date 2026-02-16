@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const AutoSuggest = ({ fetchSuggestions, onSelect, inputValue, setInputValue, Setclass }) => {
+const AutoSuggest = ({ fetchSuggestions, onSelect, inputValue, setInputValue, Setclass, placeholder }) => {
     const [suggestions, setSuggestions] = useState([]);
     const [highlightIndex, setHighlightIndex] = useState(-1);
 
@@ -51,7 +51,7 @@ const AutoSuggest = ({ fetchSuggestions, onSelect, inputValue, setInputValue, Se
                 value={inputValue}
                 onChange={handleChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Type to search..."
+                placeholder={placeholder || "Type to search..."}
                 className={Setclass}
             />
             {!inputValueMatchesSuggestion() && suggestions.length > 0 && (

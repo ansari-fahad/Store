@@ -4,6 +4,7 @@ import './Dashboard.css'; // Reuse dashboard layout styles
 import './ProductList.css'; // Custom styles for product list
 import './POS.css'; // Styles for POS section
 import AutoSuggest from './AutoSuggest';
+import API_BASE_URL from '../BASEURL';
 
 const ProductList = () => {
     const navigate = useNavigate();
@@ -68,8 +69,7 @@ const ProductList = () => {
             try {
                 // Assuming backend is running on localhost:3000
                 const response = await fetch(
-                    //    'http://localhost:3000/api/products'
-                    "https://storebackendapp.vercel.app/api/products",
+                    `${API_BASE_URL}/products`,
                 );
                 if (!response.ok) {
                     throw new Error('Failed to fetch products');

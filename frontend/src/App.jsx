@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import ProductList from './components/ProductList';
-import SalesOrder from './components/SalesOrder';
 import SalesFinal from './components/SalesFinal';
 
 function App() {
@@ -15,7 +14,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/products" element={<ProductList />} />
-        <Route path="/salesorder" element={<SalesOrder />} />
+
         <Route path="/salesfinal" element={<SalesFinal />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
