@@ -145,7 +145,7 @@ const ProductList = () => {
                                         <tr key={product._id}>
                                             <td className="product-id">#{product.ItemKey}</td>
                                             <td className="product-name">**{product.ItemName}**</td>
-                                            <td className="product-price">₹{product.ItemRate}</td>
+                                            <td className="product-price">{product.ItemRate}</td>
                                             {/* <td className="product-actions text-right">
             <button className="action-btn edit-btn">Edit</button>
             <button className="action-btn delete-btn">Delete</button>

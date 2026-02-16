@@ -38,7 +38,7 @@ const Login = () => {
         // alert('Login successful: ' + data.message);
         console.log('User data:', data.user);
         localStorage.setItem('user', JSON.stringify(data.user));
-        navigate('/products');
+        navigate('/salesfinal');
       } else {
         alert('Login failed: ' + (data.message || 'Unknown error'));
       }

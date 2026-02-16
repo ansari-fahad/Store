@@ -4,7 +4,7 @@ import './Dashboard.css'; // Reuse dashboard layout styles
 import './POS.css'; // Styles for POS section
 import AutoSuggest from './AutoSuggest';
 
-const SalesOrder = () => {
+const SalesFinal = () => {
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -127,7 +127,7 @@ const SalesOrder = () => {
         const fetchProducts = async () => {
             try {
                 // Use local backend for development
-                const response = await fetch("http://localhost:3000/api/products");
+                const response = await fetch("https://storebackendapp.vercel.app/api/products");
                 if (!response.ok) throw new Error('Failed to fetch products');
                 const data = await response.json();
                 setProducts(data);
@@ -141,7 +141,7 @@ const SalesOrder = () => {
 
         const fetchCustomers = async () => {
             try {
-                const response = await fetch("http://localhost:3000/api/customers");
+                const response = await fetch("https://storebackendapp.vercel.app/api/customers");
                 if (!response.ok) throw new Error('Failed to fetch customers');
                 const data = await response.json();
                 setCustomers(data);
@@ -158,7 +158,7 @@ const SalesOrder = () => {
         <div className="dashboard-container">
             <main className="main-content">
                 <div className="pos-container">
-                    <h2 className="title">Sales Entry</h2>
+                    <h2 className="title">Sales Final</h2>
 
                     {/* Customer Section */}
                     <div className="section customer-section" style={{ alignItems: 'flex-end' }}>
@@ -280,4 +280,4 @@ const SalesOrder = () => {
     );
 };
 
-export default SalesOrder;
+export default SalesFinal;
