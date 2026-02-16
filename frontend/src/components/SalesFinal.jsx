@@ -5,6 +5,7 @@ import './POS.css'; // Styles for POS section
 import './BootExtended.css'; // Import custom utility classes
 import AutoSuggest from './AutoSuggest';
 import API_BASE_URL from '../BASEURL';
+import { generatePDF } from '../utils/generatePdf';
 
 const SalesFinal = () => {
     const navigate = useNavigate();
@@ -104,6 +105,22 @@ const SalesFinal = () => {
         // Focus quantity input if needed
     };
 
+    const shareOnWhatsApp = (order) => {
+        let phone = order.customerPhone || '';
+        // Basic cleanup
+        phone = phone.replace(/\D/g, '');
+        // Default to India (+91) if 10 digits
+        if (phone.length === 10) {
+            phone = '91' + phone;
+        }
+
+        const invoiceLink = `${API_BASE_URL}/invoice/${order.orderID}`;
+        const message = `Hello ${order.customerName},\n\nYour Order *${order.orderID}* has been generated.\nTotal Amount: *₹ ${Number(order.totalAmount).toFixed(2)}*.\n\nYou can download your invoice here: ${invoiceLink}`;
+
+        const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+    };
+
     const handleSave = async () => {
         if (customerName == "") {
             //!selectedCustomer) {
@@ -149,6 +166,16 @@ const SalesFinal = () => {
 
             if (response.ok) {
                 alert(`Order Saved Successfully! ID: ${orderID}`);
+                generatePDF(salesOrder); // Generate PDF automatically
+
+                // Prompt to share on WhatsApp
+                setTimeout(() => {
+                    const confirmShare = window.confirm("Do you want to send this via WhatsApp?");
+                    if (confirmShare) {
+                        shareOnWhatsApp(salesOrder);
+                    }
+                }, 1000); // Small delay to allow PDF download to start/finish
+
                 handleReset(); // Clear the form
             } else {
                 alert(`Failed to save order: ${data.message}`);
