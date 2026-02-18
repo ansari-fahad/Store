@@ -9,24 +9,25 @@ export const generateInvoiceImage = async (elementId) => {
     }
 
     try {
-        // Temporarily style correctly for capture if hidden
-        const originalStyle = {
-            position: node.style.position,
-            top: node.style.top,
-            left: node.style.left,
-            zIndex: node.style.zIndex,
-            display: node.style.display
-        };
-
-        // Make it visible but off-screen (if not already) or just ensure it renders
-        // If it's "display: none", html-to-image won't capture it.
-        // It's better if the parent component manages visibility, but we can ensure zIndex
-
-        const dataUrl = await toPng(node, { quality: 0.95, backgroundColor: 'white' });
+        const dataUrl = await toPng(node, {
+            quality: 0.95,
+            backgroundColor: '#ffffff', // Ensure white background
+            width: 800,
+            height: node.scrollHeight || 1123, // A4 approx height in pixels at 96dpi
+            style: {
+                visibility: 'visible',
+                position: 'absolute', // Keep absolute to avoid reflow affecting others
+                top: '0',
+                left: '0',
+                zIndex: '9999', // Bring to front during capture
+                background: '#ffffff', // Double ensure background
+                color: '#000000', // Double ensure text color
+                transform: 'none'
+            }
+        });
         return dataUrl;
-
     } catch (error) {
-        console.error('oops, something went wrong!', error);
+        console.error('Error generating image:', error);
         return null;
     }
 };

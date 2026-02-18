@@ -5,8 +5,8 @@ import './POS.css'; // Styles for POS section
 import './BootExtended.css'; // Import custom utility classes
 import AutoSuggest from './AutoSuggest';
 import API_BASE_URL from '../BASEURL';
-// import { generateInvoiceImage } from '../utils/generateImage';
-// import { generatePDF } from '../utils/generatePdf';
+import { generateInvoiceImage } from '../utils/generateImage';
+import { generatePDF } from '../utils/generatePdf';
 
 const SalesFinal = () => {
     const navigate = useNavigate();
@@ -111,29 +111,49 @@ const SalesFinal = () => {
         phone = phone.replace(/\D/g, '');
         if (phone.length === 10) phone = '91' + phone;
 
-        // Use Backend Image Link
-        const invoiceLink = `${API_BASE_URL}/invoice-image/${order.orderID}`;
+        // Generate Image
+        const dataUrl = await generateInvoiceImage('invoice-template');
 
-        let finalLink = invoiceLink;
-        try {
-            // Shorten URL via backend
-            const shortResponse = await fetch(`${API_BASE_URL}/url/shorten`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ longUrl: invoiceLink })
-            });
-            const shortData = await shortResponse.json();
-            if (shortData.shortUrl) {
-                finalLink = shortData.shortUrl;
-            }
-        } catch (error) {
-            console.error("Failed to shorten URL, using long version:", error);
+        if (dataUrl) {
+            // Download the image
+            const link = document.createElement('a');
+            link.download = `Invoice_${order.orderID}.png`;
+            link.href = dataUrl;
+            link.click();
+
+            // Open WhatsApp with text (files must be attached manually)
+            const message = `Hello ${order.customerName},\n\nYour Order *${order.orderID}* has been generated.\nTotal Amount: *₹ ${Number(order.totalAmount).toFixed(2)}*.\n\nPlease find the invoice image attached (downloaded to your device).`;
+            const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+            // Short delay to allow download to start
+            setTimeout(() => {
+                window.open(whatsappUrl, '_blank');
+            }, 1000);
+        } else {
+            alert("Failed to generate invoice image.");
         }
+    };
 
-        const message = `Hello ${order.customerName},\n\nYour Order *${order.orderID}* has been generated.\nTotal Amount: *₹ ${Number(order.totalAmount).toFixed(2)}*.\n\nYou can view/download your invoice image here: ${finalLink}`;
-
-        const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
+    const handlePrint = () => {
+        if (cart.length === 0) {
+            alert("Cart is empty.");
+            return;
+        }
+        // Create a temporary order object for the PDF
+        const draftOrder = {
+            orderID: `DRAFT`, // Placeholder or generate a temp one
+            customerName: customerName || "Guest",
+            customerPhone: customerPhone,
+            items: cart.map(item => ({
+                ItemName: item.product,
+                Rate: item.rate,
+                Qty: item.qty,
+                Total: item.total
+            })),
+            totalAmount: finalTotal,
+            date: new Date().toISOString()
+        };
+        generatePDF(draftOrder);
     };
 
     const handleSave = async () => {
@@ -184,9 +204,13 @@ const SalesFinal = () => {
                 // generatePDF(salesOrder); // Generate PDF automatically
 
                 // Share Image via WhatsApp logic
-                const confirmShare = window.confirm("Do you want to share the invoice link via WhatsApp?");
+                // We need to wait for state/dom to be ready or generate immediately.
+                // The hidden template uses current state (cart, customerName), which are cleared by handleReset.
+                // So we must generate BEFORE resetting.
+
+                const confirmShare = window.confirm("Do you want to send invoice image via WhatsApp?");
                 if (confirmShare) {
-                    shareOnWhatsApp(salesOrder);
+                    await shareOnWhatsApp(salesOrder);
                 }
 
                 handleReset(); // Now clear
@@ -361,32 +385,126 @@ const SalesFinal = () => {
                     <div className="actions">
                         <button className="btn save" onClick={handleSave}>Save</button>
                         <button className="btn reset" onClick={handleReset}>Reset</button>
-                        {/* <button className="btn print">Print</button> */}
+                        <button className="btn print" onClick={handlePrint}>Print PDF</button>
                     </div>
                 </div>
 
-                {/* Product List Section */}
-                <div className="pos-container mt-4 highlight-border">
-                    <h3 className="title">Available Products (Click to Select)</h3>
-                    <div className="product-list-scroll">
-                        <table className="grid">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Product Name</th>
-                                    <th>Rate</th>
+                {/* Hidden Invoice Template for Image Capture - Needs to be visible for html-to-image but off-screen */}
+                <div id="invoice-template" style={{
+                    position: 'absolute',
+                    top: '-9999px',
+                    left: '-9999px',
+                    width: '800px', // Standard A4 width approx
+                    background: 'white',
+                    padding: '40px',
+                    zIndex: -1,
+                    fontFamily: 'Arial, sans-serif'
+                }}>
+                    <div style={{ borderBottom: '2px solid #333', paddingBottom: '20px', marginBottom: '20px' }}>
+                        <h1 style={{ color: '#1e1b4b', fontSize: '32px', marginBottom: '5px' }}>ESTIMATE</h1>
+                        <h3 style={{ margin: 0 }}>Nawaj Hashmi / KGN ENTERPRISE</h3>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
+                        <div>
+                            <strong>Bill To:</strong><br />
+                            <span style={{ fontSize: '18px' }}>{selectedCustomer?.name || customerName}</span><br />
+                            {customerPhone}
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                            <strong>Estimate #:</strong> {`mng_${Date.now()}`}<br />
+                            <strong>Date:</strong> {new Date().toLocaleDateString()}
+                        </div>
+                    </div>
+
+                    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+                        <thead style={{ background: '#1e1b4b', color: 'white' }}>
+                            <tr>
+                                <th style={{ padding: '10px', textAlign: 'left' }}>Item</th>
+                                <th style={{ padding: '10px', textAlign: 'center' }}>Rate</th>
+                                <th style={{ padding: '10px', textAlign: 'center' }}>Qty</th>
+                                <th style={{ padding: '10px', textAlign: 'right' }}>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {cart.map((item, index) => (
+                                <tr key={index} style={{ borderBottom: '1px solid #ddd' }}>
+                                    <td style={{ padding: '10px' }}>{item.product}</td>
+                                    <td style={{ padding: '10px', textAlign: 'center' }}>{item.rate}</td>
+                                    <td style={{ padding: '10px', textAlign: 'center' }}>{item.qty}</td>
+                                    <td style={{ padding: '10px', textAlign: 'right' }}>{item.total.toFixed(2)}</td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {products.map((product) => (
-                                    <tr key={product._id} onClick={() => handleProductSelect({ name: product.ItemName, ...product })} style={{ cursor: 'pointer' }}>
-                                        <td>{product.ItemKey}</td>
-                                        <td>{product.ItemName}</td>
-                                        <td>{product.ItemRate}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                            ))}
+                        </tbody>
+                    </table>
+
+                    <div style={{ textAlign: 'right', marginTop: '20px' }}>
+                        <p style={{ margin: '5px 0' }}>Extra Discount: {Number(extraDiscount).toFixed(2)}</p>
+                        <h2 style={{ margin: '10px 0', color: '#1e1b4b' }}>Total: ₹ {finalTotal.toFixed(2)}</h2>
+                    </div>
+
+                    <div style={{ marginTop: '50px', fontSize: '12px', color: '#666', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+                        <p>Terms & Conditions: Payment is due within 15 days.</p>
+                    </div>
+                </div>
+
+                {/* Hidden Invoice Template for Image Capture - Needs to be visible for html-to-image but off-screen */}
+                <div id="invoice-template" style={{
+                    position: 'absolute',
+                    top: '-9999px',
+                    left: '-9999px',
+                    width: '800px', // Standard A4 width approx
+                    background: '#ffffff', // Explicit white background
+                    color: '#000000', // Explicit black text
+                    padding: '40px',
+                    zIndex: -1,
+                    fontFamily: 'Arial, sans-serif'
+                }}>
+                    <div style={{ borderBottom: '2px solid #333', paddingBottom: '20px', marginBottom: '20px' }}>
+                        <h1 style={{ color: '#1e1b4b', fontSize: '32px', marginBottom: '5px' }}>ESTIMATE</h1>
+                        <h3 style={{ margin: 0, color: '#000000' }}>Nawaj Hashmi / KGN ENTERPRISE</h3>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px', color: '#000000' }}>
+                        <div>
+                            <strong>Bill To:</strong><br />
+                            <span style={{ fontSize: '18px' }}>{selectedCustomer?.name || customerName}</span><br />
+                            {customerPhone}
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                            <strong>Estimate #:</strong> {`mng_${Date.now()}`}<br />
+                            <strong>Date:</strong> {new Date().toLocaleDateString()}
+                        </div>
+                    </div>
+
+                    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+                        <thead style={{ background: '#1e1b4b', color: 'white' }}>
+                            <tr>
+                                <th style={{ padding: '10px', textAlign: 'left' }}>Item</th>
+                                <th style={{ padding: '10px', textAlign: 'center' }}>Rate</th>
+                                <th style={{ padding: '10px', textAlign: 'center' }}>Qty</th>
+                                <th style={{ padding: '10px', textAlign: 'right' }}>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody style={{ color: '#000000' }}>
+                            {cart.map((item, index) => (
+                                <tr key={index} style={{ borderBottom: '1px solid #ddd' }}>
+                                    <td style={{ padding: '10px' }}>{item.product}</td>
+                                    <td style={{ padding: '10px', textAlign: 'center' }}>{item.rate}</td>
+                                    <td style={{ padding: '10px', textAlign: 'center' }}>{item.qty}</td>
+                                    <td style={{ padding: '10px', textAlign: 'right' }}>{item.total.toFixed(2)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+
+                    <div style={{ textAlign: 'right', marginTop: '20px', color: '#000000' }}>
+                        <p style={{ margin: '5px 0' }}>Extra Discount: {Number(extraDiscount).toFixed(2)}</p>
+                        <h2 style={{ margin: '10px 0', color: '#1e1b4b' }}>Total: ₹ {finalTotal.toFixed(2)}</h2>
+                    </div>
+
+                    <div style={{ marginTop: '50px', fontSize: '12px', color: '#666', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+                        <p>Terms & Conditions: Payment is due within 15 days.</p>
                     </div>
                 </div>
             </main>

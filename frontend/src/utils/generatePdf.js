@@ -50,44 +50,83 @@ export const generatePDF = (order) => {
     // expiry date logic if needed
     // doc.text(`Expiry Date:`, rightColX, startY + (lineHeight * 2)); 
 
+    console.log("Generating PDF for order:", order);
+
     // --- Table ---
     const tableStartY = startY + 25;
 
     const tableColumn = ["Item Name", "Rate", "Amount"];
     const tableRows = [];
 
-    order.items.forEach(item => {
-        const itemData = [
-            item.ItemName,
-            item.Rate,
-            item.Total,
-        ];
-        tableRows.push(itemData);
-    });
+    if (order.items && order.items.length > 0) {
+        order.items.forEach((item, index) => {
+            console.log(`Processing item ${index}:`, item);
+            const itemData = [
+                item.ItemName || item.product || "Unknown Item", // Fallback to 'product' if ItemName missing
+                item.Rate || item.rate || 0,
+                item.Total || item.total || 0,
+            ];
+            tableRows.push(itemData);
+        });
+    } else {
+        console.warn("No items in order to print.");
+    }
 
-    autoTable(doc, {
-        head: [tableColumn],
-        body: tableRows,
-        startY: tableStartY,
-        theme: 'grid', // 'striped', 'grid', 'plain'
-        headStyles: {
-            fillColor: [30, 27, 75], // Dark Navy Blue
-            textColor: [255, 255, 255],
-            fontStyle: 'bold',
-            halign: 'left'
-        },
-        styles: {
-            font: "helvetica",
-            fontSize: 10,
-            cellPadding: 3,
-            valign: 'middle'
-        },
-        columnStyles: {
-            0: { halign: 'left' }, // Item Name
-            1: { halign: 'center' }, // Rate
-            2: { halign: 'center' }  // Amount
+    // Check if autoTable is available on doc
+    if (doc.autoTable) {
+        doc.autoTable({
+            head: [tableColumn],
+            body: tableRows,
+            startY: tableStartY,
+            theme: 'grid',
+            headStyles: {
+                fillColor: [30, 27, 75],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                halign: 'left'
+            },
+            styles: {
+                font: "helvetica",
+                fontSize: 10,
+                cellPadding: 3,
+                valign: 'middle'
+            },
+            columnStyles: {
+                0: { halign: 'left' },
+                1: { halign: 'center' },
+                2: { halign: 'center' }
+            }
+        });
+    } else {
+        // Fallback or try function call if imported
+        try {
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: tableStartY,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [30, 27, 75],
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                    halign: 'left'
+                },
+                styles: {
+                    font: "helvetica",
+                    fontSize: 10,
+                    cellPadding: 3,
+                    valign: 'middle'
+                },
+                columnStyles: {
+                    0: { halign: 'left' },
+                    1: { halign: 'center' },
+                    2: { halign: 'center' }
+                }
+            });
+        } catch (e) {
+            console.error("autoTable error:", e);
         }
-    });
+    }
 
     // --- Totals Section ---
     let finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) ? doc.lastAutoTable.finalY + 10 : tableStartY + 50;
