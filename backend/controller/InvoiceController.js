@@ -57,7 +57,7 @@ exports.generateInvoicePDF = async (req, res) => {
 
         // ================= HEADER IMAGE / LOGO =================
         // User's C# code draws logo at 'left, y, tableWidth, 80'
-        doc.fontSize(14).font('Helvetica-Bold').fillColor('#000000').text("STAR INDIA", left, y, { align: 'center', width: tableWidth });
+        doc.fontSize(14).font('Helvetica-Bold').fillColor('#000000').text("STAR INDIA FAISAL", left, y, { align: 'center', width: tableWidth });
         y += 90; // y += 90 after logo in C#
 
         // ================= ADDRESS =================
