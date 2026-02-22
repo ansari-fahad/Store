@@ -1,21 +1,33 @@
 const PDFDocument = require('pdfkit');
-const SalesOrder = require('../model/SalesOrder');
+const SalesOrderRepo = require('../repository/SalesOrderRepo');
 const dayjs = require('dayjs');
 const QRCode = require('qrcode');
 
 exports.generateInvoicePDF = async (req, res) => {
     try {
         const orderID = req.params.id;
-        const order = await SalesOrder.findOne({ OrderID: orderID });
+        const order = await SalesOrderRepo.getById(orderID);
 
         if (!order) {
             return res.status(404).send('Order not found');
         }
 
         // 393px width as per instructions
-        const pageWidth = 393;
-        // Calculation inspired by C# logic but adjusted for 393 width
-        const estimatedHeight = Math.max(472, 400 + (order.Items.length * 40));
+        const pageWidth = 300;
+        // Calculate items height upfront for dynamic page height
+        let itemsHeight = 0;
+        const tempDoc = new PDFDocument({ size: [pageWidth, 10000] });
+        tempDoc.fontSize(9).font('Helvetica');
+
+
+        order.Items.forEach(item => {
+            const productName = item.ItemName || "";
+            const textHeight = tempDoc.heightOfString(productName, { width: colPartWidth - 4 });
+            itemsHeight += Math.max(22, textHeight + 6);
+        });
+
+        // Fixed segments ≈ 460px
+        const estimatedHeight = 460 + itemsHeight;
 
         const doc = new PDFDocument({
             size: [pageWidth, estimatedHeight],
@@ -36,7 +48,7 @@ exports.generateInvoicePDF = async (req, res) => {
 
         // ================= HEADER IMAGE / LOGO =================
         // User's C# code draws logo at 'left, y, tableWidth, 80'
-        doc.fontSize(14).font('Helvetica-Bold').fillColor('#000000').text("KGN ENTERPRISE", left, y, { align: 'center', width: tableWidth });
+        doc.fontSize(14).font('Helvetica-Bold').fillColor('#000000').text("Star India", left, y, { align: 'center', width: tableWidth });
         y += 90; // y += 90 after logo in C#
 
         // ================= ADDRESS =================
@@ -129,20 +141,20 @@ exports.generateInvoicePDF = async (req, res) => {
         y += 20;
 
         // ================= QR CODE =================
-        if (p1 > 0 || order.TotalAmount > 0) {
-            const upiId = order.UpiID || "yourupi@bank";
-            const qrText = `upi://pay?pa=${upiId}&pn=StarIndia&am=${parseFloat(order.TotalAmount).toFixed(2)}`;
+        // if (p1 > 0 || order.TotalAmount > 0) {
+        //     const upiId = order.UpiID || "yourupi@bank";
+        //     const qrText = `upi://pay?pa=${upiId}&pn=StarIndia&am=${parseFloat(order.TotalAmount).toFixed(2)}`;
 
-            try {
-                const qrDataUri = await QRCode.toDataURL(qrText);
-                const qrSize = 120; // 120 in C#
-                const qrX = (pageWidth - qrSize) / 2;
-                doc.image(qrDataUri, qrX, y, { width: qrSize, height: qrSize });
-                y += qrSize + 10;
-            } catch (qrErr) {
-                console.error("QR Generation Error:", qrErr);
-            }
-        }
+        //     try {
+        //         const qrDataUri = await QRCode.toDataURL(qrText);
+        //         const qrSize = 120; // 120 in C#
+        //         const qrX = (pageWidth - qrSize) / 2;
+        //         doc.image(qrDataUri, qrX, y, { width: qrSize, height: qrSize });
+        //         y += qrSize + 10;
+        //     } catch (qrErr) {
+        //         console.error("QR Generation Error:", qrErr);
+        //     }
+        // }
 
         // ================= FOOTER =================
         doc.fontSize(9).font('Helvetica-Bold').text("Thank You Visit Again!", 0, y, { align: 'center', width: pageWidth });
