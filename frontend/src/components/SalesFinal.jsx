@@ -29,9 +29,6 @@ const SalesFinal = () => {
     const [qty, setQty] = useState('');
     const [cart, setCart] = useState([]);
     const [extraDiscount, setExtraDiscount] = useState(0);
-    const [paidAmount, setPaidAmount] = useState(0);
-    const [paidAmount2, setPaidAmount2] = useState(0);
-    const [upiID, setUpiID] = useState('yourupi@bank');
 
     const handleAdd = () => {
         if (!selectedProduct || !selectedProduct.ItemKey) {
@@ -71,7 +68,6 @@ const SalesFinal = () => {
 
     const totalAmount = cart.reduce((acc, item) => acc + item.total, 0);
     const finalTotal = totalAmount - extraDiscount;
-    const creditAmount = finalTotal - (parseFloat(paidAmount) || 0) - (parseFloat(paidAmount2) || 0);
 
     const fetchSuggestions = async (query) => {
         if (!query) return [];
@@ -220,10 +216,6 @@ const SalesFinal = () => {
                 Total: item.total
             })),
             totalAmount: finalTotal,
-            paidAmount: parseFloat(paidAmount) || 0,
-            paidAmount2: parseFloat(paidAmount2) || 0,
-            creditAmount: creditAmount,
-            upiID: upiID,
             userId: userId,
             date: new Date().toISOString()
         };
@@ -415,37 +407,7 @@ const SalesFinal = () => {
                                 onChange={(e) => setExtraDiscount(parseFloat(e.target.value) || 0)}
                             />
                         </div>
-                        <div>
-                            <label>Payment 1:</label>
-                            <input
-                                className="pos-input"
-                                type="number"
-                                value={paidAmount}
-                                onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
-                            />
-                        </div>
-                        <div>
-                            <label>Payment 2:</label>
-                            <input
-                                className="pos-input"
-                                type="number"
-                                value={paidAmount2}
-                                onChange={(e) => setPaidAmount2(parseFloat(e.target.value) || 0)}
-                            />
-                        </div>
-                        <div>
-                            <label>UPI ID:</label>
-                            <input
-                                className="pos-input"
-                                type="text"
-                                value={upiID}
-                                onChange={(e) => setUpiID(e.target.value)}
-                            />
-                        </div>
-                        <div style={{ textAlign: 'right', marginTop: '10px' }}>
-                            <h3 style={{ color: '#ef4444' }}>Credit: ₹ {creditAmount.toFixed(2)}</h3>
-                            <h2>Total: ₹ {finalTotal.toFixed(2)}</h2>
-                        </div>
+                        <h2>Total: ₹ {finalTotal.toFixed(2)}</h2>
                     </div>
 
                     {/* Action Buttons */}

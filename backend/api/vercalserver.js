@@ -11,21 +11,24 @@ const invoiceRoutes = require("../router/InvoiceRouter");
 const invoiceImageRoutes = require("../router/InvoiceImageRouter");
 const urlShortenerRoutes = require("../router/UrlShortenerRouter");
 
-const { connectDB } = require("../config/db");
-
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Connect DB when any request comes (handles both Mongo and Postgres)
+// Serverless-safe DB connection
+let isConnected = false;
+
+async function connectDB() {
+  if (isConnected) return;
+  await mongoose.connect(process.env.MONGO_URI);
+  isConnected = true;
+}
+
+// Connect DB when any request comes
 app.use(async (req, res, next) => {
-  try {
-    await connectDB();
-    next();
-  } catch (err) {
-    res.status(500).send("Database connection error");
-  }
+  await connectDB();
+  next();
 });
 
 app.get("/", (req, res) => {
