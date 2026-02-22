@@ -14,8 +14,29 @@ exports.generateInvoicePDF = async (req, res) => {
 
         // 393px width as per instructions
         const pageWidth = 393;
-        // Calculation inspired by C# logic but adjusted for 393 width
-        const estimatedHeight = Math.max(472, 400 + (order.Items.length * 40));
+
+        // // Calculate dynamic height
+        // const colSnoWidth = 30;
+        // const colQtyWidth = 35;
+        // const colRateWidth = 60;
+        // const colAmtWidth = 70;
+        // const colPartWidth = pageWidth - (colSnoWidth + colQtyWidth + colRateWidth + colAmtWidth);
+
+        let itemsHeight = 0;
+        const tempDoc = new PDFDocument({ size: [pageWidth, 10000] });
+        tempDoc.fontSize(9).font('Helvetica');
+
+        order.Items.forEach(item => {
+            const productName = item.ItemName || "";
+            const textHeight = tempDoc.heightOfString(productName, { width: colPartWidth - 4 });
+            itemsHeight += Math.max(22, textHeight + 6);
+        });
+
+        const PaidAmount = order.PaidAmount || 0;
+        const paymentsHeight = (PaidAmount > 0 ? 22 : 0) + 22 + 22; // p1 + p2 + credit
+
+        // Precise base height based on fixed y-increments (360 + 10 buffer)
+        const estimatedHeight = 370 + itemsHeight + paymentsHeight;
 
         const doc = new PDFDocument({
             size: [pageWidth, estimatedHeight],
@@ -128,21 +149,21 @@ exports.generateInvoicePDF = async (req, res) => {
 
         y += 20;
 
-        // ================= QR CODE =================
-        if (p1 > 0 || order.TotalAmount > 0) {
-            const upiId = order.UpiID || "yourupi@bank";
-            const qrText = `upi://pay?pa=${upiId}&pn=StarIndia&am=${parseFloat(order.TotalAmount).toFixed(2)}`;
+        // // ================= QR CODE =================
+        // if (p1 > 0 || order.TotalAmount > 0) {
+        //     const upiId = order.UpiID || "yourupi@bank";
+        //     const qrText = `upi://pay?pa=${upiId}&pn=StarIndia&am=${parseFloat(order.TotalAmount).toFixed(2)}`;
 
-            try {
-                const qrDataUri = await QRCode.toDataURL(qrText);
-                const qrSize = 120; // 120 in C#
-                const qrX = (pageWidth - qrSize) / 2;
-                doc.image(qrDataUri, qrX, y, { width: qrSize, height: qrSize });
-                y += qrSize + 10;
-            } catch (qrErr) {
-                console.error("QR Generation Error:", qrErr);
-            }
-        }
+        //     try {
+        //         const qrDataUri = await QRCode.toDataURL(qrText);
+        //         const qrSize = 120; // 120 in C#
+        //         const qrX = (pageWidth - qrSize) / 2;
+        //         doc.image(qrDataUri, qrX, y, { width: qrSize, height: qrSize });
+        //         y += qrSize + 10;
+        //     } catch (qrErr) {
+        //         console.error("QR Generation Error:", qrErr);
+        //     }
+        // }
 
         // ================= FOOTER =================
         doc.fontSize(9).font('Helvetica-Bold').text("Thank You Visit Again!", 0, y, { align: 'center', width: pageWidth });
