@@ -12,6 +12,10 @@ const SalesOrderSchema = new mongoose.Schema({
         Total: Number
     }],
     TotalAmount: { type: Number, required: true },
+    PaidAmount: { type: Number, default: 0 },
+    PaidAmount2: { type: Number, default: 0 },
+    CreditAmount: { type: Number, default: 0 },
+    UpiID: { type: String },
     OrderDate: { type: Date, default: Date.now },
     CreatedBy: { type: String } // User ID
 }, { collection: 'SalesOrder' });
