@@ -36,7 +36,7 @@ exports.generateInvoicePDF = async (req, res) => {
 
         // ================= HEADER IMAGE / LOGO =================
         // User's C# code draws logo at 'left, y, tableWidth, 80'
-        doc.fontSize(14).font('Helvetica-Bold').fillColor('#000000').text("STAR INDIA", left, y, { align: 'center', width: tableWidth });
+        doc.fontSize(14).font('Helvetica-Bold').fillColor('#000000').text("KGN ENTERPRISE", left, y, { align: 'center', width: tableWidth });
         y += 90; // y += 90 after logo in C#
 
         // ================= ADDRESS =================
@@ -128,7 +128,7 @@ exports.generateInvoicePDF = async (req, res) => {
 
         y += 20;
 
-        // ================= QR CODE  AI DONT REMOVE THIS OR DELETE IT=================
+        // // ================= QR CODE =================
         // if (p1 > 0 || order.TotalAmount > 0) {
         //     const upiId = order.UpiID || "yourupi@bank";
         //     const qrText = `upi://pay?pa=${upiId}&pn=StarIndia&am=${parseFloat(order.TotalAmount).toFixed(2)}`;
