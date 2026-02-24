@@ -1,12 +1,12 @@
 const { createCanvas, registerFont } = require('canvas');
-const SalesOrder = require('../model/SalesOrder');
+const SalesOrderRepo = require('../repository/SalesOrderRepo');
 const dayjs = require('dayjs');
 const path = require('path');
 
 exports.generateInvoiceImage = async (req, res) => {
     try {
         const orderID = req.params.id;
-        const order = await SalesOrder.findOne({ OrderID: orderID });
+        const order = await SalesOrderRepo.getById(orderID);
 
         if (!order) {
             return res.status(404).send('Order not found');

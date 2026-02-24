@@ -106,7 +106,7 @@ const SalesFinal = () => {
         // Focus quantity input if needed
     };
 
-    const shareImageOnWhatsApp = async (order) => {
+    const shareOnWhatsApp = async (order) => {
         let phone = order.customerPhone || '';
         phone = phone.replace(/\D/g, '');
         if (phone.length === 10) phone = '91' + phone;
@@ -115,55 +115,23 @@ const SalesFinal = () => {
         const dataUrl = await generateInvoiceImage('invoice-template');
 
         if (dataUrl) {
-            try {
-                const blob = await (await fetch(dataUrl)).blob();
-                const file = new File([blob], `Invoice_${order.orderID}.png`, { type: 'image/png' });
+            // Download the image
+            const link = document.createElement('a');
+            link.download = `Invoice_${order.orderID}.png`;
+            link.href = dataUrl;
+            link.click();
 
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        files: [file],
-                        title: 'Invoice',
-                        text: `Invoice for Order: ${order.orderID}`
-                    });
-                } else {
-                    const link = document.createElement('a');
-                    link.download = `Invoice_${order.orderID}.png`;
-                    link.href = dataUrl;
-                    link.click();
+            // Open WhatsApp with text (files must be attached manually)
+            const message = `Hello ${order.customerName},\n\nYour Order *${order.orderID}* has been generated.\nTotal Amount: *₹ ${Number(order.totalAmount).toFixed(2)}*.\n\nPlease find the invoice image attached (downloaded to your device).`;
+            const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
-                    const message = `Hello ${order.customerName},\n\nYour Order *${order.orderID}* has been generated.\nTotal Amount: *₹ ${Number(order.totalAmount).toFixed(2)}*.\n\nPlease find the invoice IMAGE attached.`;
-                    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-
-                    setTimeout(() => {
-                        window.open(whatsappUrl, '_blank');
-                    }, 1000);
-                }
-            } catch (error) {
-                const message = `Hello ${order.customerName},\n\nYour Order *${order.orderID}* has been generated.\nTotal Amount: *₹ ${Number(order.totalAmount).toFixed(2)}*.\n\nPlease find the invoice IMAGE attached.`;
-                const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            // Short delay to allow download to start
+            setTimeout(() => {
                 window.open(whatsappUrl, '_blank');
-            }
+            }, 1000);
         } else {
             alert("Failed to generate invoice image.");
         }
-    };
-
-    const sharePDFOnWhatsApp = async (order) => {
-        let phone = order.customerPhone || '';
-        phone = phone.replace(/\D/g, '');
-        if (phone.length === 10) phone = '91' + phone;
-
-        // Construct Backend Invoice Link
-        const invoiceLink = `${API_BASE_URL}/invoice/${order.orderID}`;
-
-        // Construct Message
-        const message = `Hello ${order.customerName},\n\nYour Order *${order.orderID}* has been generated.\nTotal Amount: *₹ ${Number(order.totalAmount).toFixed(2)}*.\n\nYou can download your invoice here: ${invoiceLink}`;
-
-        const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-
-        setTimeout(() => {
-            window.open(whatsappUrl, '_blank');
-        }, 1000);
     };
 
     const handlePrint = () => {
@@ -233,16 +201,19 @@ const SalesFinal = () => {
 
             if (response.ok) {
                 alert(`Order Saved Successfully! ID: ${orderID}`);
+                // generatePDF(salesOrder); // Generate PDF automatically
 
-                // Share Options
-                // if (window.confirm("Share Invoice IMAGE on WhatsApp?")) {
-                //    await shareImageOnWhatsApp(salesOrder);
-                // } else 
-                if (window.confirm("Share Invoice PDF on WhatsApp?")) {
-                    sharePDFOnWhatsApp(salesOrder);
+                // Share Image via WhatsApp logic
+                // We need to wait for state/dom to be ready or generate immediately.
+                // The hidden template uses current state (cart, customerName), which are cleared by handleReset.
+                // So we must generate BEFORE resetting.
+
+                const confirmShare = window.confirm("Do you want to send invoice image via WhatsApp?");
+                if (confirmShare) {
+                    await shareOnWhatsApp(salesOrder);
                 }
 
-                handleReset();
+                handleReset(); // Now clear
             } else {
                 alert(`Failed to save order: ${data.message}`);
             }
@@ -415,20 +386,67 @@ const SalesFinal = () => {
                         <button className="btn save" onClick={handleSave}>Save</button>
                         <button className="btn reset" onClick={handleReset}>Reset</button>
                         <button className="btn print" onClick={handlePrint}>Print PDF</button>
-                        <button className="btn" style={{ backgroundColor: '#25D366', color: 'white' }} onClick={() => {
-                            if (cart.length === 0) return alert("Cart empty");
-                            const draftOrder = { customerName, customerPhone, orderID: `DRAFT`, totalAmount: finalTotal, items: cart, extraDiscount };
-                            shareImageOnWhatsApp(draftOrder);
-                        }}>WhatsApp IMG</button>
-                        <button className="btn" style={{ backgroundColor: '#FF0000', color: 'white' }} onClick={() => {
-                            if (cart.length === 0) return alert("Cart empty");
-                            const draftOrder = { customerName, customerPhone, orderID: `DRAFT`, totalAmount: finalTotal, items: cart, extraDiscount };
-                            sharePDFOnWhatsApp(draftOrder);
-                        }}>WhatsApp PDF</button>
                     </div>
                 </div>
 
-                {/* Duplicated template removed */}
+                {/* Hidden Invoice Template for Image Capture - Needs to be visible for html-to-image but off-screen */}
+                <div id="invoice-template" style={{
+                    position: 'absolute',
+                    top: '-9999px',
+                    left: '-9999px',
+                    width: '800px', // Standard A4 width approx
+                    background: 'white',
+                    padding: '40px',
+                    zIndex: -1,
+                    fontFamily: 'Arial, sans-serif'
+                }}>
+                    <div style={{ borderBottom: '2px solid #333', paddingBottom: '20px', marginBottom: '20px' }}>
+                        <h1 style={{ color: '#1e1b4b', fontSize: '32px', marginBottom: '5px' }}>ESTIMATE</h1>
+                        <h3 style={{ margin: 0 }}>Nawaj Hashmi / KGN ENTERPRISE</h3>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
+                        <div>
+                            <strong>Bill To:</strong><br />
+                            <span style={{ fontSize: '18px' }}>{selectedCustomer?.name || customerName}</span><br />
+                            {customerPhone}
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                            <strong>Estimate #:</strong> {`mng_${Date.now()}`}<br />
+                            <strong>Date:</strong> {new Date().toLocaleDateString()}
+                        </div>
+                    </div>
+
+                    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+                        <thead style={{ background: '#1e1b4b', color: 'white' }}>
+                            <tr>
+                                <th style={{ padding: '10px', textAlign: 'left' }}>Item</th>
+                                <th style={{ padding: '10px', textAlign: 'center' }}>Rate</th>
+                                <th style={{ padding: '10px', textAlign: 'center' }}>Qty</th>
+                                <th style={{ padding: '10px', textAlign: 'right' }}>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {cart.map((item, index) => (
+                                <tr key={index} style={{ borderBottom: '1px solid #ddd' }}>
+                                    <td style={{ padding: '10px' }}>{item.product}</td>
+                                    <td style={{ padding: '10px', textAlign: 'center' }}>{item.rate}</td>
+                                    <td style={{ padding: '10px', textAlign: 'center' }}>{item.qty}</td>
+                                    <td style={{ padding: '10px', textAlign: 'right' }}>{item.total.toFixed(2)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+
+                    <div style={{ textAlign: 'right', marginTop: '20px' }}>
+                        <p style={{ margin: '5px 0' }}>Extra Discount: {Number(extraDiscount).toFixed(2)}</p>
+                        <h2 style={{ margin: '10px 0', color: '#1e1b4b' }}>Total: ₹ {finalTotal.toFixed(2)}</h2>
+                    </div>
+
+                    <div style={{ marginTop: '50px', fontSize: '12px', color: '#666', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+                        <p>Terms & Conditions: Payment is due within 15 days.</p>
+                    </div>
+                </div>
 
                 {/* Hidden Invoice Template for Image Capture - Needs to be visible for html-to-image but off-screen */}
                 <div id="invoice-template" style={{
