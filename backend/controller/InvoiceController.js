@@ -129,20 +129,20 @@ exports.generateInvoicePDF = async (req, res) => {
         y += 20;
 
         // ================= QR CODE =================
-        if (p1 > 0 || order.TotalAmount > 0) {
-            const upiId = order.UpiID || "yourupi@bank";
-            const qrText = `upi://pay?pa=${upiId}&pn=StarIndia&am=${parseFloat(order.TotalAmount).toFixed(2)}`;
+        // if (p1 > 0 || order.TotalAmount > 0) {
+        //     const upiId = order.UpiID || "yourupi@bank";
+        //     const qrText = `upi://pay?pa=${upiId}&pn=StarIndia&am=${parseFloat(order.TotalAmount).toFixed(2)}`;
 
-            try {
-                const qrDataUri = await QRCode.toDataURL(qrText);
-                const qrSize = 120; // 120 in C#
-                const qrX = (pageWidth - qrSize) / 2;
-                doc.image(qrDataUri, qrX, y, { width: qrSize, height: qrSize });
-                y += qrSize + 10;
-            } catch (qrErr) {
-                console.error("QR Generation Error:", qrErr);
-            }
-        }
+        //     try {
+        //         const qrDataUri = await QRCode.toDataURL(qrText);
+        //         const qrSize = 120; // 120 in C#
+        //         const qrX = (pageWidth - qrSize) / 2;
+        //         doc.image(qrDataUri, qrX, y, { width: qrSize, height: qrSize });
+        //         y += qrSize + 10;
+        //     } catch (qrErr) {
+        //         console.error("QR Generation Error:", qrErr);
+        //     }
+        // }
 
         // ================= FOOTER =================
         doc.fontSize(9).font('Helvetica-Bold').text("Thank You Visit Again!", 0, y, { align: 'center', width: pageWidth });
