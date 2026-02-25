@@ -10,10 +10,19 @@ exports.generateInvoicePDF = async (req, res) => {
         const order = await SalesOrder.findOne({ OrderID: orderID });
 
         if (!order) {
+
+
+
+
+
             return res.status(404).send('Order not found');
         }
 
-        // Fetch Company License Information
+        // if (!order) {
+        //     return res.status(404).send('Order not found');
+        // }
+
+        // F    etch Company License Information
         const license = await License.findOne({ _id: "STARINDIA" });
         const companyName = (license?.CompanyName || "STAR INDIA").toUpperCase();
         const address = license?.Address || "Rakhial Rd, Ahmedabad +91 9558125180";
@@ -108,11 +117,9 @@ exports.generateInvoicePDF = async (req, res) => {
 
         // ================= ITEMS =================
         doc.font('Helvetica').fontSize(9);
-        // Default maximum rows to display = 50
-        const MAX_ITEMS_TO_SHOW = 50;
+        order.Items.forEach((item, index) => {
 
-        // Loop through items (but limit to first 50 items max)
-        order.Items.slice(0, MAX_ITEMS_TO_SHOW).forEach((item, index) => {
+
             const productName = item.ItemName || "";
             const textHeight = doc.heightOfString(productName, { width: colPartWidth - 4 });
             const rowHeight = Math.max(22, textHeight + 6);
