@@ -18,17 +18,11 @@ exports.generateInvoicePDF = async (req, res) => {
         const companyName = license?.CompanyName || "STAR INDIA";
         const companyAddress = license?.Address || "Rakhial Rd, Ahmedabad +91 9558125180";
 
-        // TEST: Multiplied items by 20
-        const testItems = [];
-        for (let i = 0; i < 20; i++) {
-            testItems.push(...order.Items);
-        }
-
         // Calculate estimated height
         let baseHeight = 400;
         if (license?.LogoBase64) baseHeight += 100; // room for logo
 
-        const estimatedHeight = Math.max(baseHeight + 72, baseHeight + (testItems.length * 40));
+        const estimatedHeight = Math.max(baseHeight + 72, baseHeight + (order.Items.length * 40));
 
         // 393px width as per instructions
         const pageWidth = 393;
@@ -110,7 +104,7 @@ exports.generateInvoicePDF = async (req, res) => {
 
         // ================= ITEMS =================
         doc.font('Helvetica').fontSize(9);
-        testItems.forEach((item, index) => {
+        order.Items.forEach((item, index) => {
             const productName = item.ItemName || "";
             const textHeight = doc.heightOfString(productName, { width: colPartWidth - 4 });
             const rowHeight = Math.max(22, textHeight + 6);
@@ -139,13 +133,18 @@ exports.generateInvoicePDF = async (req, res) => {
         // ================= PAYMENTS =================
         const p1 = order.PaidAmount || 0;
         const p2 = order.PaidAmount2 || 0;
-        const credit = order.CreditAmount || (order.TotalAmount - (p1 + p2));
+        const credit = order.CreditAmount || 0;
+        const dsicount = order.Dsicount || 0;
 
-        if (p1 > 0) {
-            doc.text("Payment 1 :", col4, y);
-            doc.text(parseFloat(p1).toFixed(2), left + 10, y, { align: 'right', width: tableWidth - 20 });
-            y += 22;
-        }
+        doc.text("Discount :", col4, y);
+        doc.text(parseFloat(dsicount).toFixed(2), left + 10, y, { align: 'right', width: tableWidth - 20 });
+        y += 22;
+
+
+        doc.text("Payment 1 :", col4, y);
+        doc.text(parseFloat(p1).toFixed(2), left + 10, y, { align: 'right', width: tableWidth - 20 });
+        y += 22;
+
 
         doc.text("Payment 2 :", col4, y);
         doc.text(parseFloat(p2).toFixed(2), left + 10, y, { align: 'right', width: tableWidth - 20 });
