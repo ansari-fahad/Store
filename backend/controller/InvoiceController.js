@@ -1,6 +1,5 @@
 const PDFDocument = require('pdfkit');
 const SalesOrder = require('../model/SalesOrder');
-const License = require('../model/License');
 const dayjs = require('dayjs');
 const QRCode = require('qrcode');
 
@@ -10,44 +9,13 @@ exports.generateInvoicePDF = async (req, res) => {
         const order = await SalesOrder.findOne({ OrderID: orderID });
 
         if (!order) {
-
-
-
-
-
             return res.status(404).send('Order not found');
         }
 
-        // if (!order) {
-        //     return res.status(404).send('Order not found');
-        // }
-
-        // F    etch Company License Information
-        const license = await License.findOne({ _id: "STARINDIA" });
-        const companyName = (license?.CompanyName || "STAR INDIA").toUpperCase();
-        const address = license?.Address || "Rakhial Rd, Ahmedabad +91 9558125180";
-
         // 393px width as per instructions
         const pageWidth = 393;
-        // Dynamic Height Calculation logic (Step 266 request)
-        const colSnoWidth = 30;
-        const colQtyWidth = 35;
-        const colRateWidth = 60;
-        const colAmtWidth = 70;
-        const colPartWidth = pageWidth - (colSnoWidth + colQtyWidth + colRateWidth + colAmtWidth);
-
-        let itemsHeight = 0;
-        const tempDoc = new PDFDocument({ size: [pageWidth, 10000] });
-        tempDoc.fontSize(9).font('Helvetica');
-
-        order.Items.forEach(item => {
-            const productName = item.ItemName || "";
-            const textHeight = tempDoc.heightOfString(productName, { width: colPartWidth - 4 });
-            itemsHeight += Math.max(22, textHeight + 6);
-        });
-
-        // Fixed segments ≈ 370 + itemsHeight
-        const estimatedHeight = 472 + itemsHeight; // Including extra space for logo
+        // Calculation inspired by C# logic but adjusted for 393 width
+        const estimatedHeight = Math.max(472, 400 + (order.Items.length * 40));
 
         const doc = new PDFDocument({
             size: [pageWidth, estimatedHeight],
@@ -66,23 +34,15 @@ exports.generateInvoicePDF = async (req, res) => {
 
         let y = 10;
 
-        // ================= HEADER: COMPANY NAME =================
-        doc.fontSize(14).font('Helvetica-Bold').fillColor('#000000').text(companyName, left, y, { align: 'center', width: tableWidth });
-        y += 20;
+        // ================= HEADER IMAGE / LOGO =================
+        // User's C# code draws logo at 'left, y, tableWidth, 80'
+        doc.fontSize(14).font('Helvetica-Bold').fillColor('#000000').text("STAR INDIA", left, y, { align: 'center', width: tableWidth });
+        y += 90; // y += 90 after logo in C#
 
         // ================= ADDRESS =================
-        doc.fontSize(9).font('Helvetica-Bold').text(address, 0, y, { align: 'center', width: pageWidth });
-        y += 20;
-
-        // ================= LOGO BELOW ADDRESS =================
-        // Placeholder for Logo. y += 90 as per C# design gap
-        // if (license?.LogoBase64) {
-        //     const img = Buffer.from(license.LogoBase64, 'base64');
-        //     doc.image(img, (pageWidth - 150) / 2, y, { width: 150 });
-        //     y += 90;
-        // } else {
-        y += 80;
-        // }
+        // Font9_Bold (Calibri 9 Bold) -> Helvetica-Bold 9
+        doc.fontSize(9).font('Helvetica-Bold').text("Rakhial Rd, Ahmedabad +91 9558125180", 0, y, { align: 'center', width: pageWidth });
+        y += 27; // lh + 5 in C# (22 + 5)
 
         // ================= BILL INFO =================
         // Font9_Regu (Calibri 9 Regular) -> Helvetica 9
@@ -97,7 +57,11 @@ exports.generateInvoicePDF = async (req, res) => {
         y += 27; // lh + 5 in C#
 
         // ================= COLUMN WIDTHS =================
-        // Use colWidths calculated above
+        const colSnoWidth = 30;
+        const colQtyWidth = 35;
+        const colRateWidth = 60;
+        const colAmtWidth = 70;
+        const colPartWidth = tableWidth - (colSnoWidth + colQtyWidth + colRateWidth + colAmtWidth);
 
         const col1 = left;
         const col2 = col1 + colSnoWidth;
@@ -118,8 +82,6 @@ exports.generateInvoicePDF = async (req, res) => {
         // ================= ITEMS =================
         doc.font('Helvetica').fontSize(9);
         order.Items.forEach((item, index) => {
-
-
             const productName = item.ItemName || "";
             const textHeight = doc.heightOfString(productName, { width: colPartWidth - 4 });
             const rowHeight = Math.max(22, textHeight + 6);
@@ -167,25 +129,25 @@ exports.generateInvoicePDF = async (req, res) => {
         y += 20;
 
         // ================= QR CODE =================
-        // if (p1 > 0 || order.TotalAmount > 0) {
-        //     const upiId = order.UpiID || "yourupi@bank";
-        //     const qrText = `upi://pay?pa=${upiId}&pn=StarIndia&am=${parseFloat(order.TotalAmount).toFixed(2)}`;
+        if (p1 > 0 || order.TotalAmount > 0) {
+            const upiId = order.UpiID || "yourupi@bank";
+            const qrText = `upi://pay?pa=${upiId}&pn=StarIndia&am=${parseFloat(order.TotalAmount).toFixed(2)}`;
 
-        //     try {
-        //         const qrDataUri = await QRCode.toDataURL(qrText);
-        //         const qrSize = 120; // 120 in C#
-        //         const qrX = (pageWidth - qrSize) / 2;
-        //         doc.image(qrDataUri, qrX, y, { width: qrSize, height: qrSize });
-        //         y += qrSize + 10;
-        //     } catch (qrErr) {
-        //         console.error("QR Generation Error:", qrErr);
-        //     }
-        // }
+            try {
+                const qrDataUri = await QRCode.toDataURL(qrText);
+                const qrSize = 120; // 120 in C#
+                const qrX = (pageWidth - qrSize) / 2;
+                doc.image(qrDataUri, qrX, y, { width: qrSize, height: qrSize });
+                y += qrSize + 10;
+            } catch (qrErr) {
+                console.error("QR Generation Error:", qrErr);
+            }
+        }
 
         // ================= FOOTER =================
         doc.fontSize(9).font('Helvetica-Bold').text("Thank You Visit Again!", 0, y, { align: 'center', width: pageWidth });
         y += 22;
-        doc.fontSize(8).text("Powered by Creed Softech / 9510607733", 0, y, { align: 'center', width: pageWidth });
+        doc.fontSize(8).text("Creed Softech / 9510607733", 0, y, { align: 'center', width: pageWidth });
         y += 40;
 
         // Border around the whole content (Pen borderPen = new Pen(Color.Black, 2))
