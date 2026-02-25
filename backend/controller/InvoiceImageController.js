@@ -1,6 +1,5 @@
 const { createCanvas, registerFont } = require('canvas');
 const SalesOrderRepo = require('../repository/SalesOrderRepo');
-const License = require('../model/License');
 const dayjs = require('dayjs');
 const path = require('path');
 
@@ -12,10 +11,6 @@ exports.generateInvoiceImage = async (req, res) => {
         if (!order) {
             return res.status(404).send('Order not found');
         }
-
-        // Fetch Company License Information
-        const license = await License.findOne({ _id: "STARINDIA" });
-        const companyName = license?.CompanyName || "STAR INDIA";
 
         // Image Dimensions (approx A4 @ 72 DPI ish, scaled up for clarity)
         const width = 800;
@@ -42,7 +37,7 @@ exports.generateInvoiceImage = async (req, res) => {
         // Company
         ctx.fillStyle = '#000000';
         ctx.font = '16px Helvetica';
-        ctx.fillText(companyName, margin, y);
+        ctx.fillText('Nawaj Hashmi / KGN ENTERPRISE', margin, y);
         y += 30;
 
         // Line
