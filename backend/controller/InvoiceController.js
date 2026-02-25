@@ -174,7 +174,7 @@ exports.generateInvoicePDF = async (req, res) => {
         y += 40;
 
         // Border around the whole content (Pen borderPen = new Pen(Color.Black, 2))
-        doc.lineWidth(2).rect(5, 5, pageWidth - 10, y - 5).stroke(); // Adjusted y to fit the content
+        // //doc.lineWidth(2).rect(5, 5, pageWidth - 10, y - 5).stroke(); // Adjusted y to fit the content
 
         doc.end();
 
