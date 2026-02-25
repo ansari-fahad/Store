@@ -1,5 +1,6 @@
 const PDFDocument = require('pdfkit');
 const SalesOrder = require('../model/SalesOrder');
+const License = require('../model/License');
 const dayjs = require('dayjs');
 const QRCode = require('qrcode');
 
@@ -12,10 +13,19 @@ exports.generateInvoicePDF = async (req, res) => {
             return res.status(404).send('Order not found');
         }
 
+        // Fetch License info
+        const license = await License.findOne({ _id: "STARINDIA" });
+        const companyName = license?.CompanyName || "STAR INDIA";
+        const companyAddress = license?.Address || "Rakhial Rd, Ahmedabad +91 9558125180";
+
+        // Calculate estimated height
+        let baseHeight = 400;
+        if (license?.LogoBase64) baseHeight += 100; // room for logo
+
+        const estimatedHeight = Math.max(baseHeight + 72, baseHeight + (order.Items.length * 40));
+
         // 393px width as per instructions
         const pageWidth = 393;
-        // Calculation inspired by C# logic but adjusted for 393 width
-        const estimatedHeight = Math.max(472, 400 + (order.Items.length * 40));
 
         const doc = new PDFDocument({
             size: [pageWidth, estimatedHeight],
@@ -34,15 +44,28 @@ exports.generateInvoicePDF = async (req, res) => {
 
         let y = 10;
 
-        // ================= HEADER IMAGE / LOGO =================
-        // User's C# code draws logo at 'left, y, tableWidth, 80'
-        doc.fontSize(14).font('Helvetica-Bold').fillColor('#000000').text("STAR INDIA", left, y, { align: 'center', width: tableWidth });
-        y += 90; // y += 90 after logo in C#
+        // ================= HEADER: COMPANY NAME =================
+        doc.fontSize(14).font('Helvetica-Bold').fillColor('#000000').text(companyName.toUpperCase(), left, y, { align: 'center', width: tableWidth });
+        y += 20;
 
         // ================= ADDRESS =================
-        // Font9_Bold (Calibri 9 Bold) -> Helvetica-Bold 9
-        doc.fontSize(9).font('Helvetica-Bold').text("Rakhial Rd, Ahmedabad +91 9558125180", 0, y, { align: 'center', width: pageWidth });
-        y += 27; // lh + 5 in C# (22 + 5)
+        doc.fontSize(9).font('Helvetica-Bold').text(companyAddress, 0, y, { align: 'center', width: pageWidth });
+        y += 20;
+
+        // ================= LOGO BELOW ADDRESS =================
+        if (license?.LogoBase64) {
+            try {
+                // If it's a data URI or just base64, pdfkit can handle it
+                const logoBuffer = Buffer.from(license.LogoBase64.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+                doc.image(logoBuffer, (pageWidth - 100) / 2, y, { width: 100 });
+                y += 100;
+            } catch (err) {
+                console.error("Logo error:", err);
+                y += 10; // small gap if logo fails
+            }
+        } else {
+            y += 10; // small gap
+        }
 
         // ================= BILL INFO =================
         // Font9_Regu (Calibri 9 Regular) -> Helvetica 9
@@ -129,20 +152,20 @@ exports.generateInvoicePDF = async (req, res) => {
         y += 20;
 
         // ================= QR CODE =================
-        if (p1 > 0 || order.TotalAmount > 0) {
-            const upiId = order.UpiID || "yourupi@bank";
-            const qrText = `upi://pay?pa=${upiId}&pn=StarIndia&am=${parseFloat(order.TotalAmount).toFixed(2)}`;
+        // if (p1 > 0 || order.TotalAmount > 0) {
+        //     const upiId = order.UpiID || "yourupi@bank";
+        //     const qrText = `upi://pay?pa=${upiId}&pn=StarIndia&am=${parseFloat(order.TotalAmount).toFixed(2)}`;
 
-            try {
-                const qrDataUri = await QRCode.toDataURL(qrText);
-                const qrSize = 120; // 120 in C#
-                const qrX = (pageWidth - qrSize) / 2;
-                doc.image(qrDataUri, qrX, y, { width: qrSize, height: qrSize });
-                y += qrSize + 10;
-            } catch (qrErr) {
-                console.error("QR Generation Error:", qrErr);
-            }
-        }
+        //     try {
+        //         const qrDataUri = await QRCode.toDataURL(qrText);
+        //         const qrSize = 120; // 120 in C#
+        //         const qrX = (pageWidth - qrSize) / 2;
+        //         doc.image(qrDataUri, qrX, y, { width: qrSize, height: qrSize });
+        //         y += qrSize + 10;
+        //     } catch (qrErr) {
+        //         console.error("QR Generation Error:", qrErr);
+        //     }
+        // }
 
         // ================= FOOTER =================
         doc.fontSize(9).font('Helvetica-Bold').text("Thank You Visit Again!", 0, y, { align: 'center', width: pageWidth });
