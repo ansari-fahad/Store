@@ -106,47 +106,47 @@ const SalesFinal = () => {
         // Focus quantity input if needed
     };
 
-    const shareImageOnWhatsApp = async (order) => {
-        let phone = order.customerPhone || '';
-        phone = phone.replace(/\D/g, '');
-        if (phone.length === 10) phone = '91' + phone;
+    // const shareImageOnWhatsApp = async (order) => {
+    //     let phone = order.customerPhone || '';
+    //     phone = phone.replace(/\D/g, '');
+    //     if (phone.length === 10) phone = '91' + phone;
 
-        // Generate Image
-        const dataUrl = await generateInvoiceImage('invoice-template');
+    //     // Generate Image
+    //     const dataUrl = await generateInvoiceImage('invoice-template');
 
-        if (dataUrl) {
-            try {
-                const blob = await (await fetch(dataUrl)).blob();
-                const file = new File([blob], `Invoice_${order.orderID}.png`, { type: 'image/png' });
+    //     if (dataUrl) {
+    //         try {
+    //             const blob = await (await fetch(dataUrl)).blob();
+    //             const file = new File([blob], `Invoice_${order.orderID}.png`, { type: 'image/png' });
 
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        files: [file],
-                        title: 'Invoice',
-                        text: `Invoice for Order: ${order.orderID}`
-                    });
-                } else {
-                    const link = document.createElement('a');
-                    link.download = `Invoice_${order.orderID}.png`;
-                    link.href = dataUrl;
-                    link.click();
+    //             if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    //                 await navigator.share({
+    //                     files: [file],
+    //                     title: 'Invoice',
+    //                     text: `Invoice for Order: ${order.orderID}`
+    //                 });
+    //             } else {
+    //                 const link = document.createElement('a');
+    //                 link.download = `Invoice_${order.orderID}.png`;
+    //                 link.href = dataUrl;
+    //                 link.click();
 
-                    const message = `Hello ${order.customerName},\n\nYour Order *${order.orderID}* has been generated.\nTotal Amount: *₹ ${Number(order.totalAmount).toFixed(2)}*.\n\nPlease find the invoice IMAGE attached.`;
-                    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    //                 const message = `Hello ${order.customerName},\n\nYour Order *${order.orderID}* has been generated.\nTotal Amount: *₹ ${Number(order.totalAmount).toFixed(2)}*.\n\nPlease find the invoice IMAGE attached.`;
+    //                 const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
-                    setTimeout(() => {
-                        window.open(whatsappUrl, '_blank');
-                    }, 1000);
-                }
-            } catch (error) {
-                const message = `Hello ${order.customerName},\n\nYour Order *${order.orderID}* has been generated.\nTotal Amount: *₹ ${Number(order.totalAmount).toFixed(2)}*.\n\nPlease find the invoice IMAGE attached.`;
-                const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-                window.open(whatsappUrl, '_blank');
-            }
-        } else {
-            alert("Failed to generate invoice image.");
-        }
-    };
+    //                 setTimeout(() => {
+    //                     window.open(whatsappUrl, '_blank');
+    //                 }, 1000);
+    //             }
+    //         } catch (error) {
+    //             const message = `Hello ${order.customerName},\n\nYour Order *${order.orderID}* has been generated.\nTotal Amount: *₹ ${Number(order.totalAmount).toFixed(2)}*.\n\nPlease find the invoice IMAGE attached.`;
+    //             const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    //             window.open(whatsappUrl, '_blank');
+    //         }
+    //     } else {
+    //         alert("Failed to generate invoice image.");
+    //     }
+    // };
 
     const sharePDFOnWhatsApp = async (order) => {
         let phone = order.customerPhone || '';
