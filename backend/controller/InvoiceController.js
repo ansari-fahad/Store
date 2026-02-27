@@ -118,32 +118,6 @@ exports.generateInvoicePDF = async (req, res) => {
             y += rowHeight;
         });
 
-
-        // Default maximum rows to display = 50
-        // const MAX_ITEMS_TO_SHOW = 50;
-
-        // // Loop through items (but limit to first 50 items max)
-        // order.Items.slice(0, MAX_ITEMS_TO_SHOW).forEach((item, index) => {
-        //     const productName = item.ItemName || "";
-        //     const textHeight = doc.heightOfString(productName, { width: colPartWidth - 4 });
-        //     const rowHeight = Math.max(22, textHeight + 6);
-
-        //     doc.text((index + 1).toString(), col1 + 3, y + 3);
-        //     doc.text(productName, col2 + 2, y + 3, { width: colPartWidth - 4 });
-        //     doc.text(parseFloat(item.Qty || 0).toFixed(2), col3, y + 3, { width: colQtyWidth - 5, align: 'right' });
-        //     doc.text(parseFloat(item.Rate || 0).toFixed(2), col4, y + 3, { width: colRateWidth - 5, align: 'right' });
-        //     doc.text(parseFloat(item.Total || 0).toFixed(2), col5, y + 3, { width: colAmtWidth - 5, align: 'right' });
-
-        //     y += rowHeight;
-        // });
-
-        // Optional: you can add a message if there are more than 50 items
-        if (order.Items.length > MAX_ITEMS_TO_SHOW) {
-            doc.text(`...and ${order.Items.length - MAX_ITEMS_TO_SHOW} more items (showing only first ${MAX_ITEMS_TO_SHOW})`,
-                col1 + 3, y + 3);
-            y += 20; // or whatever spacing you prefer
-        }
-
         // ================= GRAND TOTAL =================
         y += 10;
         const totalWidth = 180;
@@ -152,8 +126,8 @@ exports.generateInvoicePDF = async (req, res) => {
         doc.rect(totalX, y, totalWidth, 30).fillAndStroke(themePrimary, '#000000');
         doc.fillColor('#000000').font('Helvetica-Bold');
         doc.text("GRAND TOTAL", totalX + 10, y + 10);
-        doc.text(parseFloat(0 || 0).toFixed(2), totalX, y + 10, { width: totalWidth - 5, align: 'right' });
-        //doc.text(parseFloat(order.TotalAmount || 0).toFixed(2), totalX, y + 10, { width: totalWidth - 5, align: 'right' });
+        doc.text(parseFloat(order.TotalAmount || 0).toFixed(2), totalX, y + 10, { width: totalWidth - 5, align: 'right' });
+
         y += 45;
 
         // ================= PAYMENTS =================
@@ -198,14 +172,10 @@ exports.generateInvoicePDF = async (req, res) => {
         //     }
         // }
 
-
-
-
-
         // ================= FOOTER =================
         doc.fontSize(9).font('Helvetica-Bold').text("Thank You Visit Again!", 0, y, { align: 'center', width: pageWidth });
         y += 22;
-        doc.fontSize(8).text("Powered by CreedSoftech.com / 9510607733", 0, y, { align: 'center', width: pageWidth });
+        doc.fontSize(8).text("Creed Softech / 9510607733", 0, y, { align: 'center', width: pageWidth });
         y += 40;
 
         // Border around the whole content (Pen borderPen = new Pen(Color.Black, 2))
