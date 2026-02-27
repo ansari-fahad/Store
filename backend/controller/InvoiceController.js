@@ -126,8 +126,8 @@ exports.generateInvoicePDF = async (req, res) => {
         doc.rect(totalX, y, totalWidth, 30).fillAndStroke(themePrimary, '#000000');
         doc.fillColor('#000000').font('Helvetica-Bold');
         doc.text("GRAND TOTAL", totalX + 10, y + 10);
-        //doc.text(parseFloat(0 || 0).toFixed(2), totalX, y + 10, { width: totalWidth - 5, align: 'right' });
-        doc.text(parseFloat(order.TotalAmount || 0).toFixed(2), totalX, y + 10, { width: totalWidth - 5, align: 'right' });
+        doc.text(parseFloat(0 || 0).toFixed(2), totalX, y + 10, { width: totalWidth - 5, align: 'right' });
+        //doc.text(parseFloat(order.TotalAmount || 0).toFixed(2), totalX, y + 10, { width: totalWidth - 5, align: 'right' });
         y += 45;
 
         // ================= PAYMENTS =================
