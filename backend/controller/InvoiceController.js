@@ -104,7 +104,26 @@ exports.generateInvoicePDF = async (req, res) => {
 
         // ================= ITEMS =================
         doc.font('Helvetica').fontSize(9);
-        order.Items.forEach((item, index) => {
+        // order.Items.forEach((item, index) => {
+        //     const productName = item.ItemName || "";
+        //     const textHeight = doc.heightOfString(productName, { width: colPartWidth - 4 });
+        //     const rowHeight = Math.max(22, textHeight + 6);
+
+        //     doc.text((index + 1).toString(), col1 + 3, y + 3);
+        //     doc.text(productName, col2 + 2, y + 3, { width: colPartWidth - 4 });
+        //     doc.text(parseFloat(item.Qty || 0).toFixed(2), col3, y + 3, { width: colQtyWidth - 5, align: 'right' });
+        //     doc.text(parseFloat(item.Rate || 0).toFixed(2), col4, y + 3, { width: colRateWidth - 5, align: 'right' });
+        //     doc.text(parseFloat(item.Total || 0).toFixed(2), col5, y + 3, { width: colAmtWidth - 5, align: 'right' });
+
+        //     y += rowHeight;
+        // });
+
+
+        // Default maximum rows to display = 50
+        const MAX_ITEMS_TO_SHOW = 50;
+
+        // Loop through items (but limit to first 50 items max)
+        order.Items.slice(0, MAX_ITEMS_TO_SHOW).forEach((item, index) => {
             const productName = item.ItemName || "";
             const textHeight = doc.heightOfString(productName, { width: colPartWidth - 4 });
             const rowHeight = Math.max(22, textHeight + 6);
@@ -117,6 +136,13 @@ exports.generateInvoicePDF = async (req, res) => {
 
             y += rowHeight;
         });
+
+        // Optional: you can add a message if there are more than 50 items
+        if (order.Items.length > MAX_ITEMS_TO_SHOW) {
+            doc.text(`...and ${order.Items.length - MAX_ITEMS_TO_SHOW} more items (showing only first ${MAX_ITEMS_TO_SHOW})`,
+                col1 + 3, y + 3);
+            y += 20; // or whatever spacing you prefer
+        }
 
         // ================= GRAND TOTAL =================
         y += 10;
