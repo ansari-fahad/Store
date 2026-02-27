@@ -126,8 +126,8 @@ exports.generateInvoicePDF = async (req, res) => {
         doc.rect(totalX, y, totalWidth, 30).fillAndStroke(themePrimary, '#000000');
         doc.fillColor('#000000').font('Helvetica-Bold');
         doc.text("GRAND TOTAL", totalX + 10, y + 10);
+        //doc.text(parseFloat(0 || 0).toFixed(2), totalX, y + 10, { width: totalWidth - 5, align: 'right' });
         doc.text(parseFloat(order.TotalAmount || 0).toFixed(2), totalX, y + 10, { width: totalWidth - 5, align: 'right' });
-
         y += 45;
 
         // ================= PAYMENTS =================
@@ -172,10 +172,14 @@ exports.generateInvoicePDF = async (req, res) => {
         //     }
         // }
 
+
+
+
+
         // ================= FOOTER =================
         doc.fontSize(9).font('Helvetica-Bold').text("Thank You Visit Again!", 0, y, { align: 'center', width: pageWidth });
         y += 22;
-        doc.fontSize(8).text("Creed Softech / 9510607733", 0, y, { align: 'center', width: pageWidth });
+        doc.fontSize(8).text("Powered by CreedSoftech.com / 9510607733", 0, y, { align: 'center', width: pageWidth });
         y += 40;
 
         // Border around the whole content (Pen borderPen = new Pen(Color.Black, 2))
