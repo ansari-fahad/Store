@@ -3,6 +3,7 @@ const SalesOrder = require('../model/SalesOrder');
 const License = require('../model/License');
 const dayjs = require('dayjs');
 const QRCode = require('qrcode');
+const path = require('path');
 
 exports.generateInvoicePDF = async (req, res) => {
     try {
@@ -19,8 +20,8 @@ exports.generateInvoicePDF = async (req, res) => {
         const companyAddress = license?.Address || "Rakhial Rd, Ahmedabad +91 9558125180";
 
         // Calculate estimated height
-        let baseHeight = 400;
-        if (license?.LogoBase64) baseHeight += 100; // room for logo
+        let baseHeight = 450; // Increased from 400 for header logo
+        if (license?.LogoBase64) baseHeight += 100; // room for additional logo if any
 
         const estimatedHeight = Math.max(baseHeight + 72, baseHeight + (order.Items.length * 40));
 
@@ -45,8 +46,19 @@ exports.generateInvoicePDF = async (req, res) => {
         let y = 10;
 
         // ================= HEADER: COMPANY NAME =================
-        doc.fontSize(14).font('Helvetica-Bold').fillColor('#000000').text(companyName.toUpperCase(), left, y, { align: 'center', width: tableWidth });
-        y += 20;
+        // doc.fontSize(14).font('Helvetica-Bold').fillColor('#000000').text(companyName.toUpperCase(), left, y, { align: 'center', width: tableWidth });
+        // y += 20;
+        const logoPath = path.join(__dirname, '../assets/logo.png');
+        try {
+            const logoWidth = 200;
+            const logoHeight = 60; // Estimated height for the logo
+            doc.image(logoPath, (pageWidth - logoWidth) / 2, y, { width: logoWidth });
+            y += logoHeight + 5;
+        } catch (err) {
+            console.error("Header Logo Error:", err);
+            doc.fontSize(14).font('Helvetica-Bold').fillColor('#000000').text(companyName.toUpperCase(), left, y, { align: 'center', width: tableWidth });
+            y += 20;
+        }
 
         // ================= ADDRESS =================
         doc.fontSize(9).font('Helvetica-Bold').text(companyAddress, 0, y, { align: 'center', width: pageWidth });
@@ -149,23 +161,14 @@ exports.generateInvoicePDF = async (req, res) => {
         const totalWidth = 180;
         const totalX = pageRight - totalWidth - 10; // Adjusted for right margin
 
-        doc.rect(totalX, y, totalWidth, 30).fillAndStroke(themePrimary, '#000000');
-        doc.fillColor('#000000').font('Helvetica-Bold');
-        doc.text("GRAND TOTAL", totalX + 10, y + 10);
-        doc.text(parseFloat(0 || 0).toFixed(2), totalX, y + 10, { width: totalWidth - 5, align: 'right' });
-        //doc.text(parseFloat(order.TotalAmount || 0).toFixed(2), totalX, y + 10, { width: totalWidth - 5, align: 'right' });
-        y += 45;
+
 
         // ================= PAYMENTS =================
         const p1 = order.PaidAmount || 0;
         const p2 = order.PaidAmount2 || 0;
         const credit = order.CreditAmount || 0;
         const dsicount = order.Dsicount || 0;
-
-        doc.text("Discount :", col4, y);
-        doc.text(parseFloat(dsicount).toFixed(2), left + 10, y, { align: 'right', width: tableWidth - 20 });
-        y += 22;
-
+        const shippingchrges = order.Shippingchrges || 0;
 
         doc.text("Payment 1 :", col4, y);
         doc.text(parseFloat(p1).toFixed(2), left + 10, y, { align: 'right', width: tableWidth - 20 });
@@ -179,6 +182,23 @@ exports.generateInvoicePDF = async (req, res) => {
         doc.text("Credit Amount :", col4, y);
         doc.text(parseFloat(credit).toFixed(2), left + 10, y, { align: 'right', width: tableWidth - 20 });
         y += 22;
+
+
+        doc.text("Discount :", col4, y);
+        doc.text(parseFloat(dsicount).toFixed(2), left + 10, y, { align: 'right', width: tableWidth - 20 });
+        y += 22;
+
+        doc.text("Shipping Charges :", col4, y);
+        doc.text(parseFloat(shippingchrges).toFixed(2), left + 10, y, { align: 'right', width: tableWidth - 20 });
+        y += 22;
+
+
+        doc.rect(totalX, y, totalWidth, 30).fillAndStroke(themePrimary, '#000000');
+        doc.fillColor('#000000').font('Helvetica-Bold');
+        doc.text("GRAND TOTAL", totalX + 10, y + 10);
+        //doc.text(parseFloat(0 || 0).toFixed(2), totalX, y + 10, { width: totalWidth - 5, align: 'right' });
+        doc.text(parseFloat(order.TotalAmount || 0).toFixed(2), totalX, y + 10, { width: totalWidth - 5, align: 'right' });
+        y += 45;
 
         y += 20;
 

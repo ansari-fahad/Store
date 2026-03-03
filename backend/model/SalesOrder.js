@@ -15,6 +15,8 @@ const SalesOrderSchema = new mongoose.Schema({
     PaidAmount: { type: Number, default: 0 },
     PaidAmount2: { type: Number, default: 0 },
     CreditAmount: { type: Number, default: 0 },
+    Discount: { type: Number, default: 0 },
+    Shippingchrges: { type: Number, default: 0 },
     UpiID: { type: String },
     OrderDate: { type: Date, default: Date.now },
     CreatedBy: { type: String } // User ID
