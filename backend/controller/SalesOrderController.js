@@ -2,7 +2,7 @@ const SalesOrder = require('../model/SalesOrder');
 
 exports.createSalesOrder = async (req, res) => {
     try {
-        const { orderID, customerName, customerPhone, items, totalAmount, userId, date, paidAmount, paidAmount2, creditAmount, discount, shippingchrges, upiID } = req.body;
+        const { orderID, customerName, customerPhone, items, totalAmount, userId, date, paidAmount, paidAmount2, creditAmount, dsicount, shippingchrges, upiID } = req.body;
 
         const newOrder = new SalesOrder({
             OrderID: orderID,
@@ -13,7 +13,7 @@ exports.createSalesOrder = async (req, res) => {
             PaidAmount: paidAmount,
             PaidAmount2: paidAmount2,
             CreditAmount: creditAmount,
-            Discount: discount,
+            Discount: dsicount,
             Shippingchrges: shippingchrges,
             UpiID: upiID,
             CreatedBy: userId,

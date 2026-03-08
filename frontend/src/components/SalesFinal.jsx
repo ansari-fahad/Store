@@ -28,11 +28,7 @@ const SalesFinal = () => {
     const [rate, setRate] = useState('');
     const [qty, setQty] = useState('');
     const [cart, setCart] = useState([]);
-    const [paidAmount, setPaidAmount] = useState(0);
-    const [paidAmount2, setPaidAmount2] = useState(0);
-    const [creditAmount, setCreditAmount] = useState(0);
-    const [discount, setDiscount] = useState(0);
-    const [shippingCharges, setShippingCharges] = useState(0);
+    const [extraDiscount, setExtraDiscount] = useState(0);
 
     const handleAdd = () => {
         if (!selectedProduct || !selectedProduct.ItemKey) {
@@ -67,15 +63,11 @@ const SalesFinal = () => {
         setProduct('');
         setRate('');
         setQty('');
-        setPaidAmount(0);
-        setPaidAmount2(0);
-        setCreditAmount(0);
-        setDiscount(0);
-        setShippingCharges(0);
+        setExtraDiscount(0);
     };
 
     const totalAmount = cart.reduce((acc, item) => acc + item.total, 0);
-    const finalTotal = totalAmount + parseFloat(shippingCharges || 0) - parseFloat(discount || 0);
+    const finalTotal = totalAmount - extraDiscount;
 
     const fetchSuggestions = async (query) => {
         if (!query) return [];
@@ -224,11 +216,6 @@ const SalesFinal = () => {
                 Total: item.total
             })),
             totalAmount: finalTotal,
-            paidAmount: paidAmount,
-            paidAmount2: paidAmount2,
-            creditAmount: creditAmount,
-            discount: discount,
-            shippingchrges: shippingCharges,
             userId: userId,
             date: new Date().toISOString()
         };
@@ -410,55 +397,17 @@ const SalesFinal = () => {
                     </table>
 
                     {/* Total Section */}
-                    <div className="summary" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                    <div className="summary">
                         <div>
-                            <label>Discount:</label>
+                            <label>Extra Discount:</label>
                             <input
                                 className="pos-input"
                                 type="number"
-                                value={discount}
-                                onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                                value={extraDiscount}
+                                onChange={(e) => setExtraDiscount(parseFloat(e.target.value) || 0)}
                             />
                         </div>
-                        <div>
-                            <label>Shipping Charges:</label>
-                            <input
-                                className="pos-input"
-                                type="number"
-                                value={shippingCharges}
-                                onChange={(e) => setShippingCharges(parseFloat(e.target.value) || 0)}
-                            />
-                        </div>
-                        <div>
-                            <label>Paid Amount:</label>
-                            <input
-                                className="pos-input"
-                                type="number"
-                                value={paidAmount}
-                                onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
-                            />
-                        </div>
-                        <div>
-                            <label>Paid Amount 2:</label>
-                            <input
-                                className="pos-input"
-                                type="number"
-                                value={paidAmount2}
-                                onChange={(e) => setPaidAmount2(parseFloat(e.target.value) || 0)}
-                            />
-                        </div>
-                        <div>
-                            <label>Credit Amount:</label>
-                            <input
-                                className="pos-input"
-                                type="number"
-                                value={creditAmount}
-                                onChange={(e) => setCreditAmount(parseFloat(e.target.value) || 0)}
-                            />
-                        </div>
-                        <div style={{ gridColumn: '1 / -1', textAlign: 'right' }}>
-                            <h2 style={{ fontSize: '2rem', color: '#6366f1' }}>Total: ₹ {finalTotal.toFixed(2)}</h2>
-                        </div>
+                        <h2>Total: ₹ {finalTotal.toFixed(2)}</h2>
                     </div>
 
                     {/* Action Buttons */}
@@ -468,12 +417,12 @@ const SalesFinal = () => {
                         <button className="btn print" onClick={handlePrint}>Print PDF</button>
                         <button className="btn" style={{ backgroundColor: '#25D366', color: 'white' }} onClick={() => {
                             if (cart.length === 0) return alert("Cart empty");
-                            const draftOrder = { customerName, customerPhone, orderID: `DRAFT`, totalAmount: finalTotal, items: cart, discount, shippingCharges };
+                            const draftOrder = { customerName, customerPhone, orderID: `DRAFT`, totalAmount: finalTotal, items: cart, extraDiscount };
                             shareImageOnWhatsApp(draftOrder);
                         }}>WhatsApp IMG</button>
                         <button className="btn" style={{ backgroundColor: '#FF0000', color: 'white' }} onClick={() => {
                             if (cart.length === 0) return alert("Cart empty");
-                            const draftOrder = { customerName, customerPhone, orderID: `DRAFT`, totalAmount: finalTotal, items: cart, discount, shippingCharges };
+                            const draftOrder = { customerName, customerPhone, orderID: `DRAFT`, totalAmount: finalTotal, items: cart, extraDiscount };
                             sharePDFOnWhatsApp(draftOrder);
                         }}>WhatsApp PDF</button>
                     </div>
@@ -532,8 +481,7 @@ const SalesFinal = () => {
                     </table>
 
                     <div style={{ textAlign: 'right', marginTop: '20px', color: '#000000' }}>
-                        <p style={{ margin: '5px 0' }}>Shipping Charges: {Number(shippingCharges).toFixed(2)}</p>
-                        <p style={{ margin: '5px 0' }}>Discount: {Number(discount).toFixed(2)}</p>
+                        <p style={{ margin: '5px 0' }}>Extra Discount: {Number(extraDiscount).toFixed(2)}</p>
                         <h2 style={{ margin: '10px 0', color: '#1e1b4b' }}>Total: ₹ {finalTotal.toFixed(2)}</h2>
                     </div>
 
